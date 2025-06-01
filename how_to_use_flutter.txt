@@ -1,0 +1,30 @@
+<자동완성>
+Ctrl + Space
+
+<위젯 만들기>
+
+home: Center(
+        child: Container(width: 50, height: 50, color: Colors.blue)
+      )
+home: Text('안녕')
+home: Icon(Icons.아이콘이름)
+home: Image.asset('Don.png')
+이미지가 assets 폴더 안에 존재해야 함.
+home: Container(width: 50, height: 50, color: Colors.blue)
+단위: LP. 1LP = 1.2cm
+home: SizedBox()
+
+<상/중/하단 나누기>
+home: Scaffold(
+        appBar: AppBar(), // 상단
+        body: Container(), // 중단
+        bottomNavigationBar: BottomAppBar(), // 하단
+      )
+
+<여러 위젯 가로/세로로 배치하기>
+Row( children: [~~] )
+Column( 동일 )
+
+<
+padding: EdgeInsets.all(20), // 내부 여백
+margin: EdgeInsets.fromLTRB(20, 30, 50, 60), // 외부 여백

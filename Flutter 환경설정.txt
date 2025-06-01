@@ -1,0 +1,36 @@
+Flutter 환경설정
+
+1. Flutter SDK 다운 (좀 걸림..)
+아래 링크에서 3.32.1-stable.zip 다운 (Windows 기준)
+https://docs.flutter.dev/get-started/install/windows/mobile
+압축 풀고, 경로 복사해두기
+
+2. Android Studio 설치 (얘도 좀 걸림..)
+https://developer.android.com/studio?hl=ko
+
+2-1. plugin 메뉴에서 Flutter 플러그인 검색 후 설치
+설치 후 restart
+
+2-2. Android SDK Tools 설치
+Projects > More Actions > SDK Manager > SDK Tools에서,
+Android SDK Command-line Tools 체크 후 Apply
+
+3. 윈도우 환경변수 등록
+윈도우 검색창에 환경 변수 입력 > [시스템 환경 변수 편집] 클릭
+환경변수 > Path 선택 > 편집 > 새로 만들기 > Flutter 압축 푼 폴더 내부의 [bin] 폴더의 경로 넣기 > 확인
+
+4. 나머지 설정
+터미널에서 flutter doctor 입력 : Flutter가 알아서 필요한 패키지 등을 설치.
+다 y로 동의하기
+
+5. Dart SDK 설치
+아래 링크에서 Dart SDK (SHA-256) 설치. 3.8.1 ver.
+https://dart-ko.dev/get-dart/archive
+
+6. Path 설정
+Android studio에서, Setting > Languages & Frameworks > Dart > Dart SDK Path에 dart-sdk 파일 경로 넣기 > 프로젝트 지정 > OK
+
+Android studio에서, Setting > Languages & Frameworks > Flutter > Flutter SDK Path에 flutter 파일 경로 넣기 > 프로젝트 지정 > OK
+
+<아래 유튜브 링크 참고하기>
+https://www.youtube.com/watch?v=usE9IKaogDU
