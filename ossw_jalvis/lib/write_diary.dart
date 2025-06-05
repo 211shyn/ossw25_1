@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'sum_result.dart';  // sum_result.dart로 이동하기 위해 import
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class WriteDiaryPage extends StatefulWidget {
   const WriteDiaryPage({super.key});
@@ -34,7 +35,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
     // 3. 변환된 텍스트를 Flutter로 응답(JSON)으로 전달
     //
     // 현재는 테스트용 코드로 2초 뒤에 임시 답변 추가하는 부분
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () async {
       setState(() {
         _answers.add("임시 답변 예시 (여기에 STT 결과가 들어감)");
         _isListening = false;
@@ -46,6 +47,12 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
           // 모든 질문에 답변이 끝나면 요약 페이지로 이동
           _navigateToSummary();
         }
+      });
+      // ✅ Firestore에 답변 저장
+      await FirebaseFirestore.instance.collection('diary_temp').add({
+        'question': _questions[_currentQuestionIndex],
+        'answer': _answers[_currentQuestionIndex],
+        'timestamp': Timestamp.now(),
       });
     });
   }

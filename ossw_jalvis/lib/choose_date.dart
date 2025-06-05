@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 선택한 날짜 출력용
 import 'main.dart'; // MainPage로 돌아가기 위해 import
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChooseDatePage extends StatefulWidget {
   final String summary; // 현재 일기의 요약본
@@ -69,8 +70,15 @@ class _ChooseDatePageState extends State<ChooseDatePage> {
           );
 
           // TODO: 선택한 날짜와 summary를 Firestore 등에 저장
-          print('✅ 선택된 날짜: ${DateFormat('yyyy-MM-dd').format(picked)}');
-          print('✅ 일기 내용: ${widget.summary}');
+          // 날짜 선택 후 일기 저장 코드 추가
+          await FirebaseFirestore.instance
+              .collection('diaries')
+              .doc(DateFormat('yyyy-MM-dd').format(picked))
+              .set({
+            'content': widget.summary,
+          });
+          //print('✅ 선택된 날짜: ${DateFormat('yyyy-MM-dd').format(picked)}');
+          //print('✅ 일기 내용: ${widget.summary}');
         }
       }
     } catch (e) {

@@ -4,9 +4,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'login.dart';
 import 'write_diary.dart';
 import 'calendar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   // LocaleDataException 방지용 초기화
   await initializeDateFormatting('ko_KR', null);
@@ -92,13 +95,21 @@ class MainPage extends StatelessWidget {
                 ),
                 elevation: 4,
               ),
-              onPressed: () {
+              onPressed: () async {
                 // TODO: 기존 일기 데이터 Firestore 연동 후 기존 일기 날짜 리스트 전달
+                final firestore = FirebaseFirestore.instance;
+                final snapshot = await firestore.collection('diaries').get();
+
+                // 문서 ID들을 DateTime으로 변환
+                final existingDates = snapshot.docs.map((doc) {
+                  return DateTime.parse(doc.id); // 문서 ID가 'yyyy-MM-dd' 형식이어야 함
+                }).toList();
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CalendarPage(
-                      existingDiaryDates: [], // TODO: Firestore 연동 후 교체
+                    builder: (context) => CalendarPage(
+                      existingDiaryDates: existingDates, // TODO: Firestore 연동 후 교체
                     ),
                   ),
                 );

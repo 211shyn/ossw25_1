@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'write_diary.dart';   // 일기 작성 화면
 import 'view_diary.dart';   // 일기 보기 화면
 
@@ -15,6 +16,29 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();   // 현재 포커스된 날짜
   DateTime? _selectedDay;                  // 사용자가 선택한 날짜
+  List<DateTime> _diaryDates = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDiaryDates(); // ✅ Firestore에서 일기 날짜 불러오기
+  }
+
+  Future<void> _loadDiaryDates() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('diaries').get();
+      final dates = snapshot.docs.map((doc) {
+        final date = DateTime.tryParse(doc.id);
+        return date;
+      }).whereType<DateTime>().toList();
+
+      setState(() {
+        _diaryDates = dates;
+      });
+    } catch (e) {
+      print('❌ Firestore 불러오기 실패: $e');
+    }
+  }
 
   /// 🔥 TODO: Firestore 연동
   /// 현재는 existingDiaryDates를 빈 리스트로 처리 중.
@@ -22,8 +46,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
   /// 이미 일기가 존재하는 날짜인지 확인
   bool _isDiaryExist(DateTime day) {
-    return widget.existingDiaryDates.any((date) =>
-    date.year == day.year &&
+    return _diaryDates.any((date) =>
+        date.year == day.year &&
         date.month == day.month &&
         date.day == day.day);
   }
@@ -35,7 +59,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _focusedDay = focusedDay;
     });
 
-    bool exists = _isDiaryExist(selectedDay);
+    final exists = _isDiaryExist(selectedDay);
 
     if (exists) {
       // 이미 일기가 있는 날짜 → ViewDiaryPage로 이동
