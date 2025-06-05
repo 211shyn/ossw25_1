@@ -6,6 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/ossw_jalvis/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/ossw_jalvis/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/ossw_jalvis/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
