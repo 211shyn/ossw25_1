@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "309022852758",
+    "project_id": "jalvis-diary",
+    "storage_bucket": "jalvis-diary.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309022852758:android:64571f2e102dfd5cab64b7",
+        "android_client_info": {
+          "package_name": "com.example.ossw_jalvis"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZ6lnMOqzkhyZybnzHgI6xQX6FAxgCeM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
