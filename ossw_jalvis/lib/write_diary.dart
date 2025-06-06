@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'sum_result.dart';  // sum_result.dart로 이동하기 위해 import
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class WriteDiaryPage extends StatefulWidget {
   final String date;  // 🔥 추가: 날짜 필드
@@ -24,30 +26,53 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
   bool _isListening = false;
 
   /// STT(음성인식) 시작 함수
-  void _startListening() {
+  void _startListening() async {
     setState(() {
       _isListening = true;
     });
 
     // TODO: 여기에 Python STT 서버 호출 코드 삽입
-    Future.delayed(const Duration(seconds: 2), () async {
-      setState(() {
-        _answers.add("임시 답변 예시 (여기에 STT 결과가 들어감)");
-        _isListening = false;
+    try {
+      final response = await http.get(Uri.parse('http://localhost:8010/stt'));
 
-        if (_currentQuestionIndex < _questions.length - 1) {
-          _currentQuestionIndex++;
-        } else {
-          _navigateToSummary();
-        }
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final sttText = data['text'];
+
+        setState(() {
+          _answers.add(sttText);
+          _isListening = false;
+
+          if (_currentQuestionIndex < _questions.length - 1) {
+            _currentQuestionIndex++;
+          } else {
+            _navigateToSummary();
+          }
+        });
+        //Future.delayed(const Duration(seconds: 2), () async {
+        //setState(() {
+        //_answers.add("임시 답변 예시 (여기에 STT 결과가 들어감)");
+        //_isListening = false;
+
+        //if (_currentQuestionIndex < _questions.length - 1) {
+        //_currentQuestionIndex++;
+        //} else {
+        //_navigateToSummary();
+        //}
+        //});
+        await FirebaseFirestore.instance.collection('diaries').doc(widget.date).set({
+          'summary': '',  // sum_result.dart에서 이 필드를 쓰므로 비워둬도 됨
+          'answers': _answers,
+        });
+      } else {
+        throw Exception('STT 서버 오류');
+      }
+    } catch (e) {
+      print("STT API 호출 실패: $e");
+      setState(() {
+        _isListening = false;
       });
-      await FirebaseFirestore.instance.collection('diary_temp').add({
-        'date': widget.date,  // 🔥 Firestore에 날짜도 저장
-        'question': _questions[_currentQuestionIndex],
-        'answer': _answers[_currentQuestionIndex],
-        'timestamp': Timestamp.now(),
-      });
-    });
+    }
   }
 
   /// 답변 초기화 함수

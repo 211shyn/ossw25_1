@@ -39,13 +39,20 @@ class _SumResultPageState extends State<SumResultPage> {
 
       if (doc.exists) {
         // Firestore에서 요약 데이터를 가져옴
-        setState(() {
-          _summary = doc.data()?['summary'] ?? '요약 데이터가 없습니다.';
-          _isLoading = false;
-        });
+        final data = doc.data();
+        final summary = data?['summary'];
+
+        if (summary == null || summary.trim().isEmpty) {
+          // 🔥 summary가 없거나 비어 있으면 요약 새로 생성
+          await _summarizeAnswers();
+        } else {
+          setState(() {
+            _summary = summary;
+            _isLoading = false;
+          });
+        }
       } else {
-        // Firestore에 데이터 없으면 새로 요약 호출
-        _summarizeAnswers();
+        await _summarizeAnswers();
       }
     } catch (e) {
       setState(() {
@@ -58,7 +65,7 @@ class _SumResultPageState extends State<SumResultPage> {
   /// 답변을 합쳐서 요약
   Future<void> _summarizeAnswers() async {
     final text = widget.answers.join(' ');
-    final uri = Uri.parse('http://localhost:5000/summarize'); // 예시
+    final uri = Uri.parse('http://127.0.0.1:8010/summarize'); // 예시
 
     try {
       final response = await http.post(

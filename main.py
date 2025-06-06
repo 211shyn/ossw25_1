@@ -1,8 +1,18 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from functions import speech_to_text_once, summarize_text, get_next_question_or_finish
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# ✅ CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 개발 중이므로 모든 origin 허용 (배포 시에는 특정 origin으로 제한 권장)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ConversationRequest(BaseModel):
     conversation: str
