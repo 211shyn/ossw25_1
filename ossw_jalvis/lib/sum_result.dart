@@ -172,14 +172,48 @@ class _SumResultPageState extends State<SumResultPage> {
                       ),
                       elevation: 4,
                     ),
-                    onPressed: () {
-                      // 저장 후 CalendarPage로 이동
+                    onPressed: () async {
+                      // Firestore에 요약 저장
+                      await FirebaseFirestore.instance
+                          .collection('diaries')
+                          .doc(widget.date)
+                          .set({'summary': _summary});
+
+                      // 저장 완료 팝업
+                      final selectedDate =
+                      DateTime.tryParse(widget.date);
+                      String formattedDate = '';
+                      if (selectedDate != null) {
+                        formattedDate =
+                        '${selectedDate.month}월 ${selectedDate.day}일';
+                      }
+
+                      // 팝업 띄우기
+                      await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('저장 완료'),
+                          content: Text(
+                              '$formattedDate의 일기가 성공적으로 저장되었습니다!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('확인'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      // CalendarPage로 이동
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const CalendarPage(
-                              existingDiaryDates: [], // 기존 데이터 받아서 채우기
-                            )),
+                          builder: (context) => const CalendarPage(
+                            existingDiaryDates: [],
+                          ),
+                        ),
                             (route) => false,
                       );
                     },
