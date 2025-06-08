@@ -56,7 +56,7 @@ def get_next_question_or_finish(conversation: str):
         "사용자의 오늘 하루를 자연스럽게 기록하도록 대화를 이어가고 있어. "
         "대화 내용 전체를 참고해서:\n"
         "1. 만약 사용자가 아직 더 이야기할 수 있을 것 같으면 다음 질문을 한 문장으로 만들어줘.\n"
-        "2. 만약 사용자가 충분히 대화했다고 판단되면 대화를 마무리하는 멘트를 만들어줘.\n\n"
+        "2. 만약 사용자가 충분히 대화했다고 판단되면 **반드시 '마무리:'로 시작하는 문장으로** 대화를 마무리하는 멘트를 만들어줘.\n\n"
         f"대화 내용:\n{conversation}\n\n"
         "비서의 답변:"
     )
@@ -71,4 +71,9 @@ def get_next_question_or_finish(conversation: str):
     )
 
     next_step = response.choices[0].message.content.strip()
+
+    # ✅ 백업 종료 조건 (GPT가 끝내는 걸 못 알아차릴 경우)
+    if "대화가 끝났어" in next_step or "요약해줘" in next_step:
+        return "마무리: 오늘 하루를 함께해줘서 고마워요. 푹 쉬고 좋은 밤 되세요!"
+
     return next_step
