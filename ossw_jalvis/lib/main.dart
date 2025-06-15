@@ -4,15 +4,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'login.dart';
 import 'write_diary.dart';
 import 'calendar.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
   // LocaleDataException 방지용 초기화
   await initializeDateFormatting('ko_KR', null);
@@ -29,7 +23,7 @@ class MyApp extends StatelessWidget {
       title: '일기 요약 인공지능 : JALVIS',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true,
+        useMaterial3: true, // 최신 디자인 적용
       ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -46,20 +40,6 @@ class MyApp extends StatelessWidget {
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
-
-  // 🔥 오전 8시를 기준으로 날짜 계산하는 함수
-  String getEffectiveDate() {
-    final now = DateTime.now();
-    final cutoffTime = DateTime(now.year, now.month, now.day, 8);
-    if (now.isBefore(cutoffTime)) {
-      // 오전 8시 이전이면 하루 전날로 계산
-      final yesterday = now.subtract(const Duration(days: 1));
-      return "${yesterday.year.toString().padLeft(4, '0')}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}";
-    } else {
-      // 오전 8시 이후면 오늘 날짜
-      return "${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,12 +71,9 @@ class MainPage extends StatelessWidget {
                 elevation: 4,
               ),
               onPressed: () {
-                final todayDate = getEffectiveDate();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => WriteDiaryPage(date: todayDate),
-                  ),
+                  MaterialPageRoute(builder: (context) => const WriteDiaryPage()),
                 );
               },
             ),
@@ -115,19 +92,13 @@ class MainPage extends StatelessWidget {
                 ),
                 elevation: 4,
               ),
-              onPressed: () async {
-                final firestore = FirebaseFirestore.instance;
-                final snapshot = await firestore.collection('diaries').get();
-
-                final existingDates = snapshot.docs.map((doc) {
-                  return DateTime.parse(doc.id);
-                }).toList();
-
+              onPressed: () {
+                // TODO: 기존 일기 데이터 Firestore 연동 후 기존 일기 날짜 리스트 전달
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CalendarPage(
-                      existingDiaryDates: existingDates,
+                    builder: (context) => const CalendarPage(
+                      existingDiaryDates: [], // TODO: Firestore 연동 후 교체
                     ),
                   ),
                 );
