@@ -28,7 +28,8 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
 
     // TODO: 여기에 Python STT 서버 호출 코드 삽입
     try {
-      final response = await http.get(Uri.parse('http://localhost:8010/stt'));
+      //final response = await http.get(Uri.parse('http://localhost:8010/stt')); // chrome(web) 실행시
+      final response = await http.get(Uri.parse('http://192.168.219.174:8010/stt')); // apk 빌드 전에 ip 수정
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -41,7 +42,8 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
 
         // 다음 질문 받아오기
         final qResponse = await http.post(
-          Uri.parse('http://localhost:8010/question'),
+          //Uri.parse('http://localhost:8010/question'), // chrome(web) 실행시
+          Uri.parse('http://192.168.219.174:8010/question'), // apk 빌드 전에 ip 수정
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'conversation': _conversation}),
         );
@@ -110,7 +112,8 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
     // 초기 질문 하나 받아오기
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final response = await http.post(
-        Uri.parse('http://localhost:8010/question'),
+        //Uri.parse('http://localhost:8010/question'), // chrome(web) 실행시
+        Uri.parse('http://192.168.219.174:8010/question'), // apk 빌드 전에 ip 수정
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'conversation': ""}),
       );

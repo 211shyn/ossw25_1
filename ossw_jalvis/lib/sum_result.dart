@@ -65,7 +65,8 @@ class _SumResultPageState extends State<SumResultPage> {
   /// 답변을 합쳐서 요약
   Future<void> _summarizeAnswers() async {
     final text = widget.answers.join(' ');
-    final uri = Uri.parse('http://127.0.0.1:8010/summarize'); // 예시
+    final uri = Uri.parse('http://192.168.219.174:8010/summarize'); // apk 빌드 전에 ip 수정
+    //final uri = Uri.parse('http://127.0.0.1:8010/summarize'); // chrome(web) 실행시
 
     try {
       final response = await http.post(
