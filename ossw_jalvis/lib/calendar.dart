@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'write_diary.dart';   // 일기 작성 화면
-import 'view_diary.dart';   // 일기 보기 화면
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'write_diary.dart';
+import 'sum_result.dart';
+import 'main.dart';  // 🔥 MainPage로 돌아가기 위해 import
 
 class CalendarPage extends StatefulWidget {
-  final List<DateTime> existingDiaryDates;  // 이미 일기가 있는 날짜 리스트
+  final List<DateTime> existingDiaryDates;
 
   const CalendarPage({super.key, required this.existingDiaryDates});
 
@@ -13,19 +15,43 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  DateTime _focusedDay = DateTime.now();   // 현재 포커스된 날짜
-  DateTime? _selectedDay;                  // 사용자가 선택한 날짜
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+  List<DateTime> _diaryDates = [];
 
-  /// 🔥 TODO: Firestore 연동
-  /// 현재는 existingDiaryDates를 빈 리스트로 처리 중.
-  /// 나중에 Firestore에서 작성된 일기 날짜를 불러와서 이 리스트에 넣어주세요.
+  @override
+  void initState() {
+    super.initState();
+    _loadDiaryDates();
+  }
+
+  Future<void> _loadDiaryDates() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('diaries').get();
+      final dates = snapshot.docs.map((doc) {
+        final date = DateTime.tryParse(doc.id);
+        return date;
+      }).whereType<DateTime>().toList();
+
+      setState(() {
+        _diaryDates = dates;
+      });
+    } catch (e) {
+      print('❌ Firestore 불러오기 실패: $e');
+    }
+  }
 
   /// 이미 일기가 존재하는 날짜인지 확인
   bool _isDiaryExist(DateTime day) {
-    return widget.existingDiaryDates.any((date) =>
+    return _diaryDates.any((date) =>
     date.year == day.year &&
         date.month == day.month &&
         date.day == day.day);
+  }
+
+  /// 🔥 날짜를 yyyy-MM-dd 형태로 변환
+  String _formatDate(DateTime day) {
+    return "${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
   }
 
   /// 날짜 클릭 시 동작
@@ -35,22 +61,26 @@ class _CalendarPageState extends State<CalendarPage> {
       _focusedDay = focusedDay;
     });
 
-    bool exists = _isDiaryExist(selectedDay);
+    final exists = _isDiaryExist(selectedDay);
+    final formattedDate = _formatDate(selectedDay);
 
     if (exists) {
-      // 이미 일기가 있는 날짜 → ViewDiaryPage로 이동
+      // 🔥 이미 일기가 있는 날짜 → SumResultPage로 이동
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ViewDiaryPage(selectedDate: selectedDay),
+          builder: (context) => SumResultPage(
+            date: formattedDate,
+            answers: const [],
+          ),
         ),
       );
     } else {
-      // 일기가 없는 날짜 → WriteDiaryPage로 이동
+      // 🔥 일기가 없는 날짜 → WriteDiaryPage로 이동
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const WriteDiaryPage(),
+          builder: (context) => WriteDiaryPage(date: formattedDate),
         ),
       );
     }
@@ -61,6 +91,18 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('일기 달력'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const MainPage()),
+                    (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -80,7 +122,7 @@ class _CalendarPageState extends State<CalendarPage> {
               color: Colors.blueAccent,
               shape: BoxShape.circle,
             ),
-            markerDecoration: BoxDecoration(
+            markerDecoration: const BoxDecoration(
               color: Colors.transparent,
               shape: BoxShape.rectangle,
             ),
@@ -89,12 +131,15 @@ class _CalendarPageState extends State<CalendarPage> {
             defaultBuilder: (context, day, focusedDay) {
               final exists = _isDiaryExist(day);
               return Container(
-                decoration: exists
-                    ? BoxDecoration(
-                  border: Border.all(color: Colors.grey.withOpacity(0.5)),
+                decoration: BoxDecoration(
+                  color: exists
+                      ? Colors.grey.withOpacity(0.3) // 🔥 음영 처리
+                      : Colors.transparent,
+                  border: exists
+                      ? Border.all(color: Colors.grey.withOpacity(0.5))
+                      : null,
                   borderRadius: BorderRadius.circular(6),
-                )
-                    : null,
+                ),
                 alignment: Alignment.center,
                 child: Text(
                   '${day.day}',
