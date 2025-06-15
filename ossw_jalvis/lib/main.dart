@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       title: '일기 요약 인공지능 : JALVIS',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true, // 최신 디자인 적용
+        useMaterial3: true,
       ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -46,6 +46,20 @@ class MyApp extends StatelessWidget {
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
+
+  // 🔥 오전 8시를 기준으로 날짜 계산하는 함수
+  String getEffectiveDate() {
+    final now = DateTime.now();
+    final cutoffTime = DateTime(now.year, now.month, now.day, 8);
+    if (now.isBefore(cutoffTime)) {
+      // 오전 8시 이전이면 하루 전날로 계산
+      final yesterday = now.subtract(const Duration(days: 1));
+      return "${yesterday.year.toString().padLeft(4, '0')}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}";
+    } else {
+      // 오전 8시 이후면 오늘 날짜
+      return "${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +91,12 @@ class MainPage extends StatelessWidget {
                 elevation: 4,
               ),
               onPressed: () {
+                final todayDate = getEffectiveDate();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const WriteDiaryPage()),
+                  MaterialPageRoute(
+                    builder: (context) => WriteDiaryPage(date: todayDate),
+                  ),
                 );
               },
             ),
@@ -99,20 +116,18 @@ class MainPage extends StatelessWidget {
                 elevation: 4,
               ),
               onPressed: () async {
-                // TODO: 기존 일기 데이터 Firestore 연동 후 기존 일기 날짜 리스트 전달
                 final firestore = FirebaseFirestore.instance;
                 final snapshot = await firestore.collection('diaries').get();
 
-                // 문서 ID들을 DateTime으로 변환
                 final existingDates = snapshot.docs.map((doc) {
-                  return DateTime.parse(doc.id); // 문서 ID가 'yyyy-MM-dd' 형식이어야 함
+                  return DateTime.parse(doc.id);
                 }).toList();
 
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CalendarPage(
-                      existingDiaryDates: existingDates, // TODO: Firestore 연동 후 교체
+                      existingDiaryDates: existingDates,
                     ),
                   ),
                 );
