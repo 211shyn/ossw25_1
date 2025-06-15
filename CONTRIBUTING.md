@@ -121,4 +121,4 @@ JALVIS는 [Conventional Commits](https://www.conventionalcommits.org/) 스타일
 우리는 모든 기여를 소중히 생각하며, 여러분의 작은 참여 하나하나가 JALVIS를 더 좋은 앱으로 만들어줍니다.  
 감사합니다!
 
-— JALVIS 팀 드림
+— team 스물하나스물셋
