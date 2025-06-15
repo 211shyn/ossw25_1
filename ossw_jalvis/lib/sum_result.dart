@@ -39,13 +39,20 @@ class _SumResultPageState extends State<SumResultPage> {
 
       if (doc.exists) {
         // Firestore에서 요약 데이터를 가져옴
-        setState(() {
-          _summary = doc.data()?['summary'] ?? '요약 데이터가 없습니다.';
-          _isLoading = false;
-        });
+        final data = doc.data();
+        final summary = data?['summary'];
+
+        if (summary == null || summary.trim().isEmpty) {
+          // 🔥 summary가 없거나 비어 있으면 요약 새로 생성
+          await _summarizeAnswers();
+        } else {
+          setState(() {
+            _summary = summary;
+            _isLoading = false;
+          });
+        }
       } else {
-        // Firestore에 데이터 없으면 새로 요약 호출
-        _summarizeAnswers();
+        await _summarizeAnswers();
       }
     } catch (e) {
       setState(() {
@@ -58,7 +65,8 @@ class _SumResultPageState extends State<SumResultPage> {
   /// 답변을 합쳐서 요약
   Future<void> _summarizeAnswers() async {
     final text = widget.answers.join(' ');
-    final uri = Uri.parse('http://localhost:5000/summarize'); // 예시
+    final uri = Uri.parse('http://192.168.219.174:8010/summarize'); // apk 빌드 전에 ip 수정
+    //final uri = Uri.parse('http://127.0.0.1:8010/summarize'); // chrome(web) 실행시
 
     try {
       final response = await http.post(
@@ -165,14 +173,48 @@ class _SumResultPageState extends State<SumResultPage> {
                       ),
                       elevation: 4,
                     ),
-                    onPressed: () {
-                      // 저장 후 CalendarPage로 이동
+                    onPressed: () async {
+                      // Firestore에 요약 저장
+                      await FirebaseFirestore.instance
+                          .collection('diaries')
+                          .doc(widget.date)
+                          .set({'summary': _summary});
+
+                      // 저장 완료 팝업
+                      final selectedDate =
+                      DateTime.tryParse(widget.date);
+                      String formattedDate = '';
+                      if (selectedDate != null) {
+                        formattedDate =
+                        '${selectedDate.month}월 ${selectedDate.day}일';
+                      }
+
+                      // 팝업 띄우기
+                      await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('저장 완료'),
+                          content: Text(
+                              '$formattedDate의 일기가 성공적으로 저장되었습니다!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('확인'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      // CalendarPage로 이동
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const CalendarPage(
-                              existingDiaryDates: [], // 기존 데이터 받아서 채우기
-                            )),
+                          builder: (context) => const CalendarPage(
+                            existingDiaryDates: [],
+                          ),
+                        ),
                             (route) => false,
                       );
                     },

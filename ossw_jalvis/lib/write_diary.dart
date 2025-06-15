@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'sum_result.dart';  // sum_result.dart로 이동하기 위해 import
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class WriteDiaryPage extends StatefulWidget {
   final String date;  // 🔥 추가: 날짜 필드
@@ -13,48 +15,80 @@ class WriteDiaryPage extends StatefulWidget {
 
 class _WriteDiaryPageState extends State<WriteDiaryPage> {
   // 질문 리스트: 사용자가 하나씩 음성으로 대답해야 하는 질문들
-  final List<String> _questions = [
-    "오늘 하루엔 무슨 일이 있었나요?",
-    "당신은 어떤 기분으로 오늘을 보냈나요?",
-    "오늘을 마무리하며, 내일을 시작하는 당신은 어떤 모습이고 싶나요?",
-  ];
-
-  int _currentQuestionIndex = 0;
+  final List<String> _questions = []; // 질문 리스트(서버에서 받아옴)
   final List<String> _answers = [];
   bool _isListening = false;
+  String _conversation = "";
 
   /// STT(음성인식) 시작 함수
-  void _startListening() {
+  void _startListening() async {
     setState(() {
       _isListening = true;
     });
 
     // TODO: 여기에 Python STT 서버 호출 코드 삽입
-    Future.delayed(const Duration(seconds: 2), () async {
-      setState(() {
-        _answers.add("임시 답변 예시 (여기에 STT 결과가 들어감)");
-        _isListening = false;
+    try {
+      //final response = await http.get(Uri.parse('http://localhost:8010/stt')); // chrome(web) 실행시
+      final response = await http.get(Uri.parse('http://192.168.219.174:8010/stt')); // apk 빌드 전에 ip 수정
 
-        if (_currentQuestionIndex < _questions.length - 1) {
-          _currentQuestionIndex++;
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final sttText = data['text'];
+
+        setState(() {
+          _answers.add(sttText);
+          _conversation += "사용자: $sttText\n";
+        });
+
+        // 다음 질문 받아오기
+        final qResponse = await http.post(
+          //Uri.parse('http://localhost:8010/question'), // chrome(web) 실행시
+          Uri.parse('http://192.168.219.174:8010/question'), // apk 빌드 전에 ip 수정
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'conversation': _conversation}),
+        );
+
+        if (qResponse.statusCode == 200) {
+          final qData = json.decode(qResponse.body);
+          final nextQ = qData['next_step'];
+
+          setState(() {
+            _questions.add(nextQ);
+            _conversation += "비서: $nextQ\n";
+            _isListening = false;
+          });
+          if (nextQ.contains("마무리")) {
+            // 파이어스토어 저장
+            await FirebaseFirestore.instance.collection('diaries').doc(
+                widget.date).set({
+              'summary': '',
+              'answers': _answers,
+            });
+
+            // ✅ 2초 기다린 후 요약 페이지로 이동
+            await Future.delayed(const Duration(seconds: 2));
+            _navigateToSummary();
+          }
         } else {
-          _navigateToSummary();
+          throw Exception('질문 생성 실패');
         }
+      } else {
+        throw Exception('STT 실패');
+      }
+    } catch (e) {
+      print("STT API 호출 실패: $e");
+      setState(() {
+        _isListening = false;
       });
-      await FirebaseFirestore.instance.collection('diary_temp').add({
-        'date': widget.date,  // 🔥 Firestore에 날짜도 저장
-        'question': _questions[_currentQuestionIndex],
-        'answer': _answers[_currentQuestionIndex],
-        'timestamp': Timestamp.now(),
-      });
-    });
+    }
   }
 
   /// 답변 초기화 함수
   void _resetDiary() {
     setState(() {
-      _currentQuestionIndex = 0;
+      _questions.clear();
       _answers.clear();
+      _conversation = "";
       _isListening = false;
     });
   }
@@ -73,6 +107,30 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // 초기 질문 하나 받아오기
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final response = await http.post(
+        //Uri.parse('http://localhost:8010/question'), // chrome(web) 실행시
+        Uri.parse('http://192.168.219.174:8010/question'), // apk 빌드 전에 ip 수정
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'conversation': ""}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final question = data['next_step'];
+
+        setState(() {
+          _questions.add(question);
+          _conversation += "비서: $question\n";
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -84,7 +142,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
           children: [
             Expanded(
               child: ListView.builder(
-                itemCount: _currentQuestionIndex + 1,
+                itemCount: _questions.length,
                 itemBuilder: (context, index) {
                   return ListTile(
                     leading: const Icon(Icons.question_answer),
