@@ -1,0 +1,43 @@
+name: ossw_jalvis
+description: "Jalvis Project using Flutter"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.1.0
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.4.0
+  table_calendar: ^3.0.9
+  firebase_core: ^3.14.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.9
+  js: ^0.7.1
+  intl: ^0.20.2
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1   # ✅ 앱 아이콘 생성기 추가
+
+flutter_icons:                      # ✅ 아이콘 설정
+  android: true
+  ios: true
+  image_path: "assets/jalvisIcon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/puangNjalvis.png
+    - assets/puang.png
+    - assets/jalvis.png
+    - assets/jalvisSmall.png
+    - assets/jalvisIcon.png         # ✅ 아이콘 이미지 등록
