@@ -32,6 +32,7 @@ async def question_api(req: ConversationRequest):
 @app.post("/summarize")
 async def summarize_api(req: SummaraizeRequest):
     summary = summarize_text(req.text)
+
     return {"summary": summary}
 
 @app.get("/favicon.ico")

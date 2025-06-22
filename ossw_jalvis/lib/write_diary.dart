@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'sum_result.dart';  // sum_result.dart로 이동하기 위해 import
+import 'sum_result.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class WriteDiaryPage extends StatefulWidget {
-  final String date;  // 🔥 추가: 날짜 필드
+  final String date;
 
   const WriteDiaryPage({super.key, required this.date});
 
@@ -15,11 +16,11 @@ class WriteDiaryPage extends StatefulWidget {
 }
 
 class _WriteDiaryPageState extends State<WriteDiaryPage> {
-  // 질문 리스트: 사용자가 하나씩 음성으로 대답해야 하는 질문들
-  final List<String> _questions = []; // 질문 리스트(서버에서 받아옴)
+  final List<String> _questions = [];
   final List<String> _answers = [];
   bool _isListening = false;
   String _conversation = "";
+
 
   late stt.SpeechToText _speech;
 
@@ -61,6 +62,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
       _isListening = true;
     });
 
+
     await _speech.listen(onResult: (result) async {
       if (result.finalResult) {
         String userAnswer = result.recognizedWords;
@@ -69,11 +71,13 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
           _conversation += "사용자: $userAnswer\n";
         });
 
+
         _speech.stop();
         await _fetchNextQuestion();
       }
     });
   }
+
 
   /// 서버에 현재까지 대화를 보내고 다음 질문을 받아오는 함수
   Future<void> _fetchNextQuestion() async {
@@ -104,6 +108,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
 
         await Future.delayed(const Duration(seconds: 2));
         _navigateToSummary();
+
       }
     } else {
       print('질문 생성 실패');
@@ -113,7 +118,6 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
     }
   }
 
-  /// 답변 초기화 함수
   void _resetDiary() {
     setState(() {
       _questions.clear();
@@ -123,13 +127,12 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
     });
   }
 
-  /// SumResultPage로 이동
   void _navigateToSummary() {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SumResultPage(
-          date: widget.date,      // 🔥 날짜도 전달
+          date: widget.date,
           answers: _answers,
         ),
       ),
@@ -139,36 +142,72 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFD8E6ED),
       appBar: AppBar(
-        title: Text('오늘 하루 기록하기 (${widget.date})'),  // 🔥 날짜 표시
+        title: Text(
+          '오늘 하루 기록하기 (${widget.date})',
+          style: GoogleFonts.nanumMyeongjo(
+            fontWeight: FontWeight.w600,
+            fontSize: 22,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFF7F2EC),
+        foregroundColor: Colors.black,
+        elevation: 1,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           children: [
+            // ✅ 질문/답변 리스트
             Expanded(
               child: ListView.builder(
                 itemCount: _questions.length,
                 itemBuilder: (context, index) {
                   return ListTile(
                     leading: const Icon(Icons.question_answer),
-                    title: Text(_questions[index]),
-                    subtitle: index < _answers.length
-                        ? Text(_answers[index])
-                        : const Text('답변 대기 중...'),
+                    title: Text(
+                      _questions[index],
+                      style: GoogleFonts.nanumMyeongjo(),
+                    ),
+                    subtitle: Text(
+                      index < _answers.length
+                          ? _answers[index]
+                          : 'JALVIS가 답변을 기다리고 있어요...',
+                      style: GoogleFonts.nanumMyeongjo(),
+                    ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 20),
+
+            // ✅ 좌우 이미지 대칭 (버튼 위로 내림)
+            Padding(
+              padding: const EdgeInsets.only(top: 40.0, bottom: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Image.asset('assets/puang.png', height: 360),
+                  Image.asset('assets/jalvisSmall.png', height: 360),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ✅ 버튼 영역
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
-                    label: Text(_isListening ? '답변 중...' : '답변 시작/끝'),
+                    label: Text(
+                      _isListening ? '답변 중...' : '이야기 시작/끝',
+                      style: GoogleFonts.nanumMyeongjo(),
+                    ),
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -180,8 +219,12 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.refresh),
-                  label: const Text('다시하기'),
+                  label: Text(
+                    '다시 들려주기',
+                    style: GoogleFonts.nanumMyeongjo(),
+                  ),
                   style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
                     minimumSize: const Size(120, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -192,6 +235,9 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
                 ),
               ],
             ),
+
+            // ✅ 버튼과 화면 하단 사이 여유
+            const SizedBox(height: 32),
           ],
         ),
       ),

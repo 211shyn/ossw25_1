@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ChangeDiaryPage extends StatefulWidget {
   final String initialSummary;
@@ -15,7 +16,6 @@ class _ChangeDiaryPageState extends State<ChangeDiaryPage> {
   @override
   void initState() {
     super.initState();
-    // 초기 요약 텍스트를 TextEditingController에 세팅
     _controller = TextEditingController(text: widget.initialSummary);
   }
 
@@ -25,8 +25,6 @@ class _ChangeDiaryPageState extends State<ChangeDiaryPage> {
     super.dispose();
   }
 
-  /// 사용자가 수정한 텍스트를 반환하는 함수
-  /// 실제 저장은 부모 페이지에서 처리하도록 설계
   void _saveEditedSummary() {
     Navigator.pop(context, _controller.text);
   }
@@ -34,33 +32,61 @@ class _ChangeDiaryPageState extends State<ChangeDiaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFD8E6ED),
       appBar: AppBar(
-        title: const Text('일기 수정하기'),
+        title: Text(
+          '일기 수정하기',
+          style: GoogleFonts.nanumMyeongjo(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFF7F2EC),
+        foregroundColor: Colors.black,
+        elevation: 1,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           children: [
-            // 📌 수정할 수 있는 TextField
+            const SizedBox(height: 40),
+
+            // ✅ 중앙 이미지
+            Image.asset(
+              'assets/puang.png',
+              height: 500,
+              fit: BoxFit.contain,
+            ),
+
+            const SizedBox(height: 28),
+
+            // ✅ 수정 가능한 TextField
             Expanded(
               child: TextField(
                 controller: _controller,
-                maxLines: null, // 여러 줄 입력 가능
+                maxLines: null,
                 decoration: InputDecoration(
-                  labelText: '수정된 일기 내용',
+                  labelText: '지금까지의 일기장',
+                  labelStyle: GoogleFonts.nanumMyeongjo(),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
                   ),
+                  contentPadding: const EdgeInsets.all(16.0),
                 ),
+                style: GoogleFonts.nanumMyeongjo(fontSize: 16, height: 1.5),
               ),
             ),
-            const SizedBox(height: 20),
-            // 📌 저장 버튼
+
+            const SizedBox(height: 24),
+
+            // ✅ 저장 버튼
             ElevatedButton.icon(
               icon: const Icon(Icons.save),
-              label: const Text('저장'),
+              label: Text(
+                '저장',
+                style: GoogleFonts.nanumMyeongjo(),
+              ),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
+                padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -68,6 +94,8 @@ class _ChangeDiaryPageState extends State<ChangeDiaryPage> {
               ),
               onPressed: _saveEditedSummary,
             ),
+
+            const SizedBox(height: 40), // ✅ sum_result.dart와 동일한 하단 여백
           ],
         ),
       ),

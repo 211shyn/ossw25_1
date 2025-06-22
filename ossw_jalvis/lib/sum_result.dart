@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:cloud_firestore/cloud_firestore.dart';  // Firestore 추가
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'change_diary.dart';
-import 'calendar.dart';  // 🔥 수정: choose_date.dart 대신 calendar.dart로 이동
+import 'calendar.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SumResultPage extends StatefulWidget {
-  final String date;          // 🔥 날짜 파라미터 추가
+  final String date;
   final List<String> answers;
 
   const SumResultPage({
@@ -20,7 +21,7 @@ class SumResultPage extends StatefulWidget {
 }
 
 class _SumResultPageState extends State<SumResultPage> {
-  String _summary = '요약 중...';
+  String _summary = 'JALVIS가 당신의 이야기를 요약 중이에요...';
   bool _isLoading = true;
 
   @override
@@ -29,7 +30,6 @@ class _SumResultPageState extends State<SumResultPage> {
     _loadSummary();
   }
 
-  /// Firestore에서 해당 날짜의 일기 요약을 불러오고 없다면 새로 요약
   Future<void> _loadSummary() async {
     try {
       final doc = await FirebaseFirestore.instance
@@ -38,12 +38,10 @@ class _SumResultPageState extends State<SumResultPage> {
           .get();
 
       if (doc.exists) {
-        // Firestore에서 요약 데이터를 가져옴
         final data = doc.data();
         final summary = data?['summary'];
 
         if (summary == null || summary.trim().isEmpty) {
-          // 🔥 summary가 없거나 비어 있으면 요약 새로 생성
           await _summarizeAnswers();
         } else {
           setState(() {
@@ -62,9 +60,8 @@ class _SumResultPageState extends State<SumResultPage> {
     }
   }
 
-  /// 답변을 합쳐서 요약
   Future<void> _summarizeAnswers() async {
-    final text = widget.answers.join(' ');
+
     final uri = Uri.parse('https://97f6-211-212-3-131.ngrok-free.app/summarize'); // apk 빌드 전에 ip 수정
     //final uri = Uri.parse('http://127.0.0.1:8010/summarize'); // chrome(web) 실행시
 
@@ -82,7 +79,7 @@ class _SumResultPageState extends State<SumResultPage> {
           _summary = decoded['summary'];
           _isLoading = false;
         });
-        // Firestore에 저장
+
         await FirebaseFirestore.instance
             .collection('diaries')
             .doc(widget.date)
@@ -106,124 +103,155 @@ class _SumResultPageState extends State<SumResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFD8E6ED),
       appBar: AppBar(
-        title: Text('요약 결과 (${widget.date})'),
+        title: Text(
+          '요약 결과 (${widget.date})',
+          style: GoogleFonts.nanumMyeongjo(fontSize: 20, fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFF7F2EC),
+        foregroundColor: Colors.black,
+        elevation: 1,
       ),
-      body: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator()
-            : Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              // 📌 요약 결과 박스
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Text(
-                  _summary,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          children: [
+            // ✅ 상단 큰 이미지
+            Padding(
+              padding: const EdgeInsets.only(top: 60.0),
+              child: Image.asset(
+                'assets/jalvis.png',
+                height: 500,
+                fit: BoxFit.contain,
               ),
-              const SizedBox(height: 20),
-              // 📌 수정 버튼과 저장 버튼
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.edit),
-                    label: const Text('수정'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(120, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                    ),
-                    onPressed: () async {
-                      final editedSummary = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChangeDiaryPage(
-                            initialSummary: _summary,
-                          ),
-                        ),
-                      );
-                      if (editedSummary != null) {
-                        setState(() {
-                          _summary = editedSummary;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.save),
-                    label: const Text('저장'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(120, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                    ),
-                    onPressed: () async {
-                      // Firestore에 요약 저장
-                      await FirebaseFirestore.instance
-                          .collection('diaries')
-                          .doc(widget.date)
-                          .set({'summary': _summary});
+            ),
 
-                      // 저장 완료 팝업
-                      final selectedDate =
-                      DateTime.tryParse(widget.date);
-                      String formattedDate = '';
-                      if (selectedDate != null) {
-                        formattedDate =
-                        '${selectedDate.month}월 ${selectedDate.day}일';
-                      }
+            const Spacer(),
 
-                      // 팝업 띄우기
-                      await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('저장 완료'),
-                          content: Text(
-                              '$formattedDate의 일기가 성공적으로 저장되었습니다!'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('확인'),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      // CalendarPage로 이동
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CalendarPage(
-                            existingDiaryDates: [],
-                          ),
-                        ),
-                            (route) => false,
-                      );
-                    },
-                  ),
-                ],
+            // ✅ 안내 문구 추가
+            Text(
+              'JALVIS가 당신의 하루를 이렇게 요약했어요. 이대로 저장할까요??',
+              style: GoogleFonts.nanumMyeongjo(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 16),
+
+            // ✅ 요약 결과 박스
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Text(
+                _summary,
+                style: GoogleFonts.nanumMyeongjo(fontSize: 16, height: 1.6),
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // ✅ 버튼 두 개
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.edit),
+                  label: Text(
+                    '이야기 수정하기',
+                    style: GoogleFonts.nanumMyeongjo(),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(160, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                  ),
+                  onPressed: () async {
+                    final editedSummary = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeDiaryPage(
+                          initialSummary: _summary,
+                        ),
+                      ),
+                    );
+                    if (editedSummary != null) {
+                      setState(() {
+                        _summary = editedSummary;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(width: 20),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.save),
+                  label: Text(
+                    '이대로 저장하기',
+                    style: GoogleFonts.nanumMyeongjo(),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(160, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                  ),
+                  onPressed: () async {
+                    await FirebaseFirestore.instance
+                        .collection('diaries')
+                        .doc(widget.date)
+                        .set({'summary': _summary});
+
+                    final selectedDate = DateTime.tryParse(widget.date);
+                    String formattedDate = '';
+                    if (selectedDate != null) {
+                      formattedDate =
+                      '${selectedDate.month}월 ${selectedDate.day}일';
+                    }
+
+                    await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('저장 완료'),
+                        content: Text(
+                            '$formattedDate의 일기를 소중하게 보관할게요!'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('확인'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CalendarPage(
+                          existingDiaryDates: [],
+                        ),
+                      ),
+                          (route) => false,
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
