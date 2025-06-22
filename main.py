@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from functions import speech_to_text_once, summarize_text, get_next_question_or_finish
+from functions import summarize_text, get_next_question_or_finish
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -20,14 +20,9 @@ class ConversationRequest(BaseModel):
 class SummaraizeRequest(BaseModel):
     text: str
 
-@app.get("/stt")
-async def stt_api():
-    text = speech_to_text_once()
-    if text:
-        return {"text": text}
-    else:
-        raise HTTPException(status_code=400, detail="음성 인식 실패")
-    
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI 서버가 정상적으로 작동 중입니다."}
 
 @app.post("/question")
 async def question_api(req: ConversationRequest):
@@ -37,4 +32,9 @@ async def question_api(req: ConversationRequest):
 @app.post("/summarize")
 async def summarize_api(req: SummaraizeRequest):
     summary = summarize_text(req.text)
+
     return {"summary": summary}
+
+@app.get("/favicon.ico")
+def favicon():
+    return {}

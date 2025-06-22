@@ -61,10 +61,12 @@ class _SumResultPageState extends State<SumResultPage> {
   }
 
   Future<void> _summarizeAnswers() async {
-    final text = widget.answers.join(' ');
-    final uri = Uri.parse('http://192.168.45.156:8010/summarize');
+
+    final uri = Uri.parse('https://97f6-211-212-3-131.ngrok-free.app/summarize'); // apk 빌드 전에 ip 수정
+    //final uri = Uri.parse('http://127.0.0.1:8010/summarize'); // chrome(web) 실행시
 
     try {
+      
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
