@@ -1,34 +1,7 @@
-import speech_recognition as sr
 from openai import OpenAI
 
 # 새로운 방식: 클라이언트 객체 생성(API key 생략됨)
 client = OpenAI(api_key="sk-여기에_발급받은_API키_입력")
-
-def speech_to_text_once():
-    """
-    한 번만 음성을 인식해 텍스트로 변환 후 반환하는 함수.
-    """
-    recognizer = sr.Recognizer()
-
-    with sr.Microphone() as source:
-        recognizer.adjust_for_ambient_noise(source)
-        print("듣고 있어요...")
-
-        try:
-            audio = recognizer.listen(source, timeout=5)
-            text = recognizer.recognize_google(audio, language='ko-KR')
-            print("인식된 텍스트:", text)
-            return text
-        except sr.WaitTimeoutError:
-            print("시간 초과: 아무 소리도 감지하지 못함")
-            return None
-        except sr.UnknownValueError:
-            print("음성을 인식할 수 없음")
-            return None
-        except sr.RequestError as e:
-            print(f"요청 실패: {e}")
-            return None
-
 
 def summarize_text(text):
     prompt = (
