@@ -20,6 +20,10 @@ class ConversationRequest(BaseModel):
 class SummaraizeRequest(BaseModel):
     text: str
 
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI 서버가 정상적으로 작동 중입니다."}
+
 @app.post("/question")
 async def question_api(req: ConversationRequest):
     next_step = get_next_question_or_finish(req.conversation)
@@ -29,3 +33,7 @@ async def question_api(req: ConversationRequest):
 async def summarize_api(req: SummaraizeRequest):
     summary = summarize_text(req.text)
     return {"summary": summary}
+
+@app.get("/favicon.ico")
+def favicon():
+    return {}
