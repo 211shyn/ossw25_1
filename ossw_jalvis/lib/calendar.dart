@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'write_diary.dart';
 import 'sum_result.dart';
 import 'main.dart';
@@ -28,7 +29,15 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _loadDiaryDates() async {
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('diaries').get();
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('diaries')
+          .get();
+
       final dates = snapshot.docs.map((doc) {
         final date = DateTime.tryParse(doc.id);
         return date;

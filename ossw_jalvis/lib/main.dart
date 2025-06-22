@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -161,8 +162,18 @@ class MainPage extends StatelessWidget {
                     ),
                     onPressed: () async {
                       final firestore = FirebaseFirestore.instance;
-                      final snapshot =
-                      await firestore.collection('diaries').get();
+                      final uid = FirebaseAuth.instance.currentUser?.uid;
+
+                      if (uid == null) {
+                        print('❌ 사용자 인증 정보 없음');
+                        return;
+                      }
+
+                      final snapshot = await firestore
+                          .collection('users')
+                          .doc(uid)
+                          .collection('diaries')
+                          .get();
 
                       final existingDates = snapshot.docs.map((doc) {
                         return DateTime.parse(doc.id);

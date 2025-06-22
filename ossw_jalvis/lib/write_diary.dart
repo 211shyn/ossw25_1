@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'sum_result.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
@@ -98,17 +99,23 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
       });
 
       if (nextQ.contains("마무리")) {
-        await FirebaseFirestore.instance
-            .collection('diaries')
-            .doc(widget.date)
-            .set({
-          'summary': '',
-          'answers': _answers,
-        });
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('diaries')
+              .doc(widget.date)
+              .set({
+            'summary': '',
+            'answers': _answers,
+          });
 
-        await Future.delayed(const Duration(seconds: 2));
-        _navigateToSummary();
-
+          await Future.delayed(const Duration(seconds: 2));
+          _navigateToSummary();
+        } else {
+          print('❌ 사용자 로그인 정보 없음');
+        }
       }
     } else {
       print('질문 생성 실패');

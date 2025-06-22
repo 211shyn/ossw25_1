@@ -1,7 +1,9 @@
 from openai import OpenAI
 
 # 새로운 방식: 클라이언트 객체 생성(API key 생략됨)
-client = OpenAI(api_key="sk-여기에_발급받은_API키_입력")
+client = OpenAI(api_key="sk-여기에_발급받은_API키_입력"
+                        ""
+                        "")
 
 def summarize_text(text):
     prompt = (

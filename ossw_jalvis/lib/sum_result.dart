@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'change_diary.dart';
 import 'calendar.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,7 +33,10 @@ class _SumResultPageState extends State<SumResultPage> {
 
   Future<void> _loadSummary() async {
     try {
+      final userId = FirebaseAuth.instance.currentUser!.uid;
       final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
           .collection('diaries')
           .doc(widget.date)
           .get();
@@ -78,7 +82,10 @@ class _SumResultPageState extends State<SumResultPage> {
           _isLoading = false;
         });
 
+        final userId = FirebaseAuth.instance.currentUser!.uid;
         await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
             .collection('diaries')
             .doc(widget.date)
             .set({'summary': decoded['summary']});
@@ -207,7 +214,10 @@ class _SumResultPageState extends State<SumResultPage> {
                     elevation: 4,
                   ),
                   onPressed: () async {
+                    final userId = FirebaseAuth.instance.currentUser!.uid;
                     await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userId)
                         .collection('diaries')
                         .doc(widget.date)
                         .set({'summary': _summary});
