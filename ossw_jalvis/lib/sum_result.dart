@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';  // Firestore 추가
 import 'change_diary.dart';
 import 'calendar.dart';  // 🔥 수정: choose_date.dart 대신 calendar.dart로 이동
-import 'huggingface.dart';
 
 class SumResultPage extends StatefulWidget {
   final String date;          // 🔥 날짜 파라미터 추가
@@ -66,11 +65,11 @@ class _SumResultPageState extends State<SumResultPage> {
   /// 답변을 합쳐서 요약
   Future<void> _summarizeAnswers() async {
     final text = widget.answers.join(' ');
-    //final uri = Uri.parse('http://192.168.219.110:8010/summarize'); // apk 빌드 전에 ip 수정
+    final uri = Uri.parse('https://97f6-211-212-3-131.ngrok-free.app/summarize'); // apk 빌드 전에 ip 수정
     //final uri = Uri.parse('http://127.0.0.1:8010/summarize'); // chrome(web) 실행시
 
     try {
-      /*
+      
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -94,23 +93,10 @@ class _SumResultPageState extends State<SumResultPage> {
           _isLoading = false;
         });
       }
-      */
-      final summary = await summarizeText(text); // Hugging Face에서 요약 실행
-      setState(() {
-        _summary = summary;
-        _isLoading = false;
-      });
-
-      // Firestore에 저장
-      await FirebaseFirestore.instance
-          .collection('diaries')
-          .doc(widget.date)
-          .set({'summary': summary});
     } catch (e) {
       setState(() {
-        //_summary = '임시 요약 예시: 여기에 GPT 요약 결과가 들어갑니다.\n\n'
-        //    '⚠️ 현재 서버 연결이 설정되지 않았습니다.';
-        _summary = 'Hugging Face 요약 실패: $e';
+        _summary = '임시 요약 예시: 여기에 GPT 요약 결과가 들어갑니다.\n\n'
+            '⚠️ 현재 서버 연결이 설정되지 않았습니다.';
         _isLoading = false;
       });
       print('요약 API 호출 실패: $e');
