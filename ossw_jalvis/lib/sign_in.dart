@@ -14,6 +14,8 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _pwController = TextEditingController();
   final TextEditingController _pwCheckController = TextEditingController();
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   void _signUp() async {
     final email = _emailController.text.trim();
     final pw = _pwController.text.trim();
@@ -25,12 +27,17 @@ class _SignInPageState extends State<SignInPage> {
     }
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final newUser = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: pw,
       );
 
-      Navigator.pop(context, 'success');
+      if (newUser.user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('회원가입이 완료되었습니다!')),
+        );
+        Navigator.pop(context, 'success');
+      }
     } catch (e) {
       _showError('회원가입에 실패했어요. (${e.toString()})');
       print('❌ 회원가입 오류: $e');
