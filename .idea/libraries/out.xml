@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="out">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/ossw_jalvis/build/app/intermediates/r8_metadata/release/minifyReleaseWithR8/out.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

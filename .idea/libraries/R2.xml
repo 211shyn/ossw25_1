@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="R2">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/ossw_jalvis/build/cloud_firestore/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
