@@ -66,7 +66,7 @@ class _SumResultPageState extends State<SumResultPage> {
 
   Future<void> _summarizeAnswers() async {
     final text = widget.answers.join(' ');
-    final uri = Uri.parse('https://97f6-211-212-3-131.ngrok-free.app/summarize');
+    final uri = Uri.parse('https://jalvis.ngrok.dev/summarize');
 
     try {
       final response = await http.post(

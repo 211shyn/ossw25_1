@@ -35,7 +35,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
   /// 초기에 첫 질문을 받아오는 함수
   void _initializeConversation() async {
     final response = await http.post(
-      Uri.parse('https://97f6-211-212-3-131.ngrok-free.app/question'), // apk 빌드 전에 ip 수정
+      Uri.parse('https://jalvis.ngrok.dev/question'), // apk 빌드 전에 ip 수정
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'conversation': ""}),
     );
@@ -83,7 +83,7 @@ class _WriteDiaryPageState extends State<WriteDiaryPage> {
   /// 서버에 현재까지 대화를 보내고 다음 질문을 받아오는 함수
   Future<void> _fetchNextQuestion() async {
     final qResponse = await http.post(
-      Uri.parse('https://97f6-211-212-3-131.ngrok-free.app/question'), // apk 빌드 전에 ip 수정
+      Uri.parse('https://jalvis.ngrok.dev/question'), // apk 빌드 전에 ip 수정
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'conversation': _conversation}),
     );
